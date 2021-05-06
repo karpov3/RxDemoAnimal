@@ -16,7 +16,7 @@ public class AnimalClient: AnimalClientType {
 
     let baseUrl: URL
 
-    init(baseUrl: URL, provider: MoyaProvider<AnimalService> = MoyaProvider<AnimalService>()) {
+    public init(baseUrl: URL, provider: MoyaProvider<AnimalService> = MoyaProvider<AnimalService>()) {
         self.baseUrl = baseUrl
         self.provider = provider
     }

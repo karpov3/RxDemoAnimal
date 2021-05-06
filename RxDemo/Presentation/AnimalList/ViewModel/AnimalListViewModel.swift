@@ -11,7 +11,6 @@ import RxCocoa
 import RxSwiftExt
 import RxRelay
 
-
 public class AnimalListViewModel: AnimalListViewModelling {
     
     var someSideEffect: Int = 10
@@ -22,20 +21,15 @@ public class AnimalListViewModel: AnimalListViewModelling {
     
     public lazy var count: Driver<Int> = result
         .compactMap{$0.success}
-        .asDriver(onErrorJustReturn: [])
         .map{$0.count}
         .startWith(0)
-    
-    
-    func makeCount(value: Int) -> Int {
-        
-        
-        return value + self.someSideEffect
-    }
-    
+        .asDriver(onErrorJustReturn: 0)
+       
+
     func pureFunction(value: Int) -> Int {
         return value * 2
     }
+    
     
     public lazy var errorMessage: Driver<String> = result
         .compactMap{$0.error?.message}
@@ -49,9 +43,10 @@ public class AnimalListViewModel: AnimalListViewModelling {
     // MARK: Data
     
     lazy var result: Observable<Result<[Animal], AnimalError>> = searchKey
-        .debounce(.milliseconds(500), scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
+        .debounce(.seconds(1), scheduler: searchKeyScheduler)
         .withUnretained(self)
-        .flatMap { (`self`, searchKey) in
+//        .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+        .flatMapLatest { (`self`, searchKey) in
             self.manager
                 .animals()
                 .map{$0.filter{$0.name.lowercased().contains(searchKey.lowercased())}}
@@ -63,9 +58,11 @@ public class AnimalListViewModel: AnimalListViewModelling {
     
     let manager: AnimalManagerType
     
-    public init(manager: AnimalManagerType) {
+    let searchKeyScheduler: SchedulerType
+    
+    public init(manager: AnimalManagerType, searchKeyScheduler: SchedulerType = MainScheduler.instance) {
         
         self.manager = manager
-        
+        self.searchKeyScheduler = searchKeyScheduler
     }
 }

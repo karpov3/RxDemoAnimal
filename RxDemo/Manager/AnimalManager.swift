@@ -31,7 +31,7 @@ public class AnimalManager: AnimalManagerType {
     }
     
     
-    // MARK: Initialization
+    // MARK: Initialisation
     
     let animalClient: AnimalClientType
     

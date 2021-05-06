@@ -1,33 +1,24 @@
 //
-//  Factory.swift
-//  RxDemo
+//  FactoryMock.swift
+//  RxDemoTests
 //
-//  Created by Alexander Karpov on 27/04/21.
+//  Created by Alexander Karpov on 05/05/21.
 //
 
 import Foundation
-import UIKit
+import RxDemo
 import Moya
+import UIKit
 import RxSwift
+import RxTest
 
-public protocol FactoryType {
-    
-    func animalClient() -> AnimalClientType
-    
-    func animalManager() -> AnimalManagerType
-    
-    func animalListViewModel(scheduler: SchedulerType) -> AnimalListViewModelling
-
-}
-
-public class Factory: FactoryType {
-    
+public class FactoryMock: FactoryType {
     
     public func animalManager() -> AnimalManagerType {
         AnimalManager(animalClient: animalClient())
     }
     
-    public func animalListViewModel(scheduler: SchedulerType = MainScheduler.instance) -> AnimalListViewModelling {
+    public func animalListViewModel(scheduler: SchedulerType) -> AnimalListViewModelling {
         AnimalListViewModel(manager: animalManager(), searchKeyScheduler: scheduler)
     }
     
@@ -46,8 +37,11 @@ public class Factory: FactoryType {
 
             return Endpoint(url: service.baseURL.absoluteString,
                             sampleResponseClosure: { () -> EndpointSampleResponse in
+                                
                                 let data = NSDataAsset(name: assetName, bundle: Bundle.main)?.data ?? Data()
-                                return EndpointSampleResponse.networkResponse(200, data) },
+                                return EndpointSampleResponse.networkResponse(200, data)
+                                
+                            },
                             method: service.method,
                             task: service.task,
                             httpHeaderFields: service.headers)
@@ -62,3 +56,24 @@ public class Factory: FactoryType {
 }
 
 
+public class AnimalManagerMock: AnimalManagerType {
+    
+    // MARK: AnimalManagerType
+    public func animals() -> Observable<[Animal]> {
+//        return Observable.error(AnimalError.badResponse)
+        return Observable.just(animal)
+    }
+        
+    // MARK: Initialisation
+
+    let animal: [Animal]
+  
+    internal init(animal: [Animal]) {
+        self.animal = animal
+    }
+    
+    init() {
+        self.animal = []
+    }
+    
+}
